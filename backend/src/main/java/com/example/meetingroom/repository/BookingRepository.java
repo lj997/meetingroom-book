@@ -17,16 +17,19 @@ import java.util.Optional;
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
-    List<Booking> findByUserOrderByDateDescStartTimeDesc(User user);
+    @Query("SELECT b FROM Booking b LEFT JOIN FETCH b.meetingRoom LEFT JOIN FETCH b.user WHERE b.user = :user ORDER BY b.date DESC, b.startTime DESC")
+    List<Booking> findByUserOrderByDateDescStartTimeDesc(@Param("user") User user);
 
+    @Query("SELECT b FROM Booking b LEFT JOIN FETCH b.meetingRoom LEFT JOIN FETCH b.user WHERE b.meetingRoom = :meetingRoom AND b.date = :date AND b.status = :status ORDER BY b.startTime")
     List<Booking> findByMeetingRoomAndDateAndStatusOrderByStartTime(
-            MeetingRoom meetingRoom, 
-            LocalDate date, 
-            BookingStatus status);
+            @Param("meetingRoom") MeetingRoom meetingRoom, 
+            @Param("date") LocalDate date, 
+            @Param("status") BookingStatus status);
 
+    @Query("SELECT b FROM Booking b LEFT JOIN FETCH b.meetingRoom LEFT JOIN FETCH b.user WHERE b.date = :date AND b.status = :status ORDER BY b.date DESC, b.startTime DESC")
     List<Booking> findByDateAndStatusOrderByDateDescStartTimeDesc(
-            LocalDate date, 
-            BookingStatus status);
+            @Param("date") LocalDate date, 
+            @Param("status") BookingStatus status);
 
     @Query("SELECT b FROM Booking b WHERE b.meetingRoom = :meetingRoom " +
            "AND b.date = :date AND b.status = :status " +
@@ -49,7 +52,12 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             @Param("status") BookingStatus status,
             @Param("excludeId") Long excludeId);
 
-    Optional<Booking> findByIdAndUser(Long id, User user);
+    @Query("SELECT b FROM Booking b LEFT JOIN FETCH b.meetingRoom LEFT JOIN FETCH b.user WHERE b.id = :id AND b.user = :user")
+    Optional<Booking> findByIdAndUser(@Param("id") Long id, @Param("user") User user);
 
-    List<Booking> findByMeetingRoomOrderByDateDescStartTimeDesc(MeetingRoom meetingRoom);
+    @Query("SELECT b FROM Booking b LEFT JOIN FETCH b.meetingRoom LEFT JOIN FETCH b.user WHERE b.id = :id")
+    Optional<Booking> findById(@Param("id") Long id);
+
+    @Query("SELECT b FROM Booking b LEFT JOIN FETCH b.meetingRoom LEFT JOIN FETCH b.user WHERE b.meetingRoom = :meetingRoom ORDER BY b.date DESC, b.startTime DESC")
+    List<Booking> findByMeetingRoomOrderByDateDescStartTimeDesc(@Param("meetingRoom") MeetingRoom meetingRoom);
 }

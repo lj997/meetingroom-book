@@ -1,5 +1,6 @@
 package com.example.meetingroom.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
@@ -26,6 +27,7 @@ public class MeetingRoom {
 
     private boolean active = true;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "meetingRoom", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Booking> bookings = new HashSet<>();
 
