@@ -19,7 +19,7 @@
       <div v-for="booking in bookings" :key="booking.id" class="card" style="margin-bottom: 16px;">
         <div class="booking-header">
           <div class="booking-title">{{ booking.title }}</div>
-          <span class="booking-status" :class="booking.status.toLowerCase()">
+          <span class="booking-status" :class="booking.status?.toLowerCase() || ''">
             {{ getStatusText(booking.status) }}
           </span>
         </div>
@@ -105,11 +105,21 @@ const formatTime = (time) => {
 }
 
 const canCancel = (booking) => {
-  if (booking.status !== 'CONFIRMED') return false
+  if (!booking || booking.status !== 'CONFIRMED') return false
+  if (!booking.date || !booking.startTime) return false
 
   const now = new Date()
   const bookingDate = new Date(booking.date)
-  const [hours, minutes] = booking.startTime.split(':').map(Number)
+  
+  if (isNaN(bookingDate.getTime())) return false
+  
+  const timeParts = booking.startTime.split(':')
+  if (timeParts.length < 2) return false
+  
+  const hours = Number(timeParts[0])
+  const minutes = Number(timeParts[1])
+  
+  if (isNaN(hours) || isNaN(minutes)) return false
 
   bookingDate.setHours(hours, minutes, 0, 0)
 
