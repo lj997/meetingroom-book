@@ -70,9 +70,9 @@
           <div v-else>
             <div v-for="booking in bookings" :key="booking.id" class="booking-card">
               <div class="booking-header">
-                <div class="booking-title">{{ booking.title }}</div>
-                <span class="booking-status" :class="booking.status.toLowerCase()">
-                  {{ booking.status === 'CONFIRMED' ? '已确认' : '已取消' }}
+                <div class="booking-title">{{ booking.title || '未知会议' }}</div>
+                <span class="booking-status" :class="booking.status?.toLowerCase() || ''">
+                  {{ booking.status === 'CONFIRMED' ? '已确认' : booking.status === 'CANCELLED' ? '已取消' : '' }}
                 </span>
               </div>
               <div class="booking-info">
@@ -196,7 +196,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, getCurrentScope } from 'vue'
 import { getAllMeetingRooms } from '../api/meetingRoom'
 import { getBookingsByRoomAndDate, getBookingsByDate, createBooking } from '../api/booking'
 
@@ -212,6 +212,8 @@ const createSuccess = ref(false)
 const currentDate = ref(new Date())
 const selectedDate = ref(new Date())
 const selectedRoomId = ref(null)
+
+let successTimeoutId = null
 
 const weekdays = ['日', '一', '二', '三', '四', '五', '六']
 
@@ -374,9 +376,14 @@ const handleCreateBooking = async () => {
     })
     createSuccess.value = true
     loadBookings()
-    setTimeout(() => {
+    
+    if (successTimeoutId) {
+      clearTimeout(successTimeoutId)
+    }
+    successTimeoutId = setTimeout(() => {
       showCreateModal.value = false
       resetCreateForm()
+      successTimeoutId = null
     }, 1500)
   } catch (err) {
     createError.value = err.message || '预约失败'
@@ -409,6 +416,13 @@ watch(selectedDate, () => {
 onMounted(() => {
   loadMeetingRooms()
   createForm.value.date = formatDate(selectedDate.value)
+})
+
+onUnmounted(() => {
+  if (successTimeoutId) {
+    clearTimeout(successTimeoutId)
+    successTimeoutId = null
+  }
 })
 
 watch(showCreateModal, (val) => {

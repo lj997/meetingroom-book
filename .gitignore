@@ -102,3 +102,6 @@ Desktop.ini
 
 # 环境变量文件
 .env
+backend/data/meetingroom.trace.db
+.gitignore
+backend/data/meetingroom.mv.db
